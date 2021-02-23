@@ -1,0 +1,58 @@
+### Install System Dependencies
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install git jq bc make automake rsync htop curl build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ wget libncursesw5 libtool autoconf -y
+
+
+### Install Libsodium
+
+mkdir $HOME/git
+cd $HOME/git
+git clone https://github.com/input-output-hk/libsodium
+cd libsodium
+git checkout 66f017f1
+./autogen.sh
+./configure
+make
+sudo make install
+
+
+### Install Cabal
+cd
+wget https://downloads.haskell.org/~cabal/cabal-install-3.2.0.0/cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz
+tar -xf cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz
+rm cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz cabal.sig
+mkdir -p $HOME/.local/bin
+mv cabal $HOME/.local/bin/
+
+### install ghc *nix
+wget https://downloads.haskell.org/ghc/8.10.2/ghc-8.10.2-x86_64-deb9-linux.tar.xz
+tar -xf ghc-8.10.2-x86_64-deb9-linux.tar.xz
+rm ghc-8.10.2-x86_64-deb9-linux.tar.xz
+cd ghc-8.10.2
+./configure
+sudo make install
+
+### install ghc/cabal *mac
+curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+
+source $HOME/.ghcup/env
+
+ghcup install 8.10.2
+ghcup set 8.10.2
+
+ghcup install cabal 3.2.0.0
+ghcup set cabal 3.2.0.0
+
+
+
+
+## Build Cardano Node/CLI
+cabal update
+echo “package cardano-crypto-praos” >> cabal.project.local 
+echo " flags: -external-libsodium-vrf" >> cabal.project.local 
+cabal install cardano-node cardano-cli --enable-optimization=2 –-install-method=copy -–installdir= $HOME/.local/bin
+
+echo export NODE_HOME=/git/pool-home >> $HOME/.bashrc
+
+
